@@ -36,9 +36,6 @@ void free_index_entry(index_entry_t *);
 
 bool index_is_empty(index_file_t *);
 bool index_contains_file(index_file_t *, const char *);
-index_entry_t *index_init_entry(uint32_t size,
-                                object_hash_t sha1, char *fname,
-                                uint32_t fname_length, time_t mtime);
 
 index_entry_t *index_create_entry(char *fname,
                                   struct stat *sb,
