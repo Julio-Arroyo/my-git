@@ -23,3 +23,4 @@ out/%.o: src/%.c
 
 clean:
 	rm -f out/*.o out/*.d bin/mygit
+

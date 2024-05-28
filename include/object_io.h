@@ -59,11 +59,20 @@ void apply_ref_delta(
     object_hash_t hash
 );
 
+void get_object_hash(
+    object_type_t type,
+    const void *contents,
+    size_t length,
+    object_hash_t hash
+);
+
 void write_object(
     object_type_t type,
     const void *contents,
     size_t length,
     object_hash_t hash
 );
+
+object_hash_t *store_blob(const char *added_file);
 
 #endif // #ifndef OBJECT_IO_H

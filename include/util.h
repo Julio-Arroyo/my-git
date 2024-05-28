@@ -13,6 +13,10 @@ uint8_t from_hex(char c);
 char to_hex(uint8_t value);
 
 void hash_to_hex(const uint8_t hash_bytes[HASH_BYTES], object_hash_t hash_string);
+
+/**
+ * Populates 'hash_bytes'
+ */
 void hex_to_hash(const object_hash_t hash_string, uint8_t hash_bytes[HASH_BYTES]);
 
 // Reads a big-endian unsigned integer with the given number of bytes
@@ -27,5 +31,12 @@ void make_dirs(char *path);
 void make_parent_dirs(char *path);
 
 size_t get_file_size(FILE *f);
+
+/*
+ * Populates 'files' with the relative path names of all files under
+ * 'root_dir'. If 'recursive' is true, then files in subdirectories are
+ * also added
+ */
+void get_all_files(const char *dir, linked_list *files);
 
 #endif // #ifndef UTIL_H

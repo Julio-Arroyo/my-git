@@ -34,7 +34,7 @@ uint32_t read32(FILE *f) {
 }
 
 /*
- * Write in big-endian order
+ * Write 32-bit number 'n' to file 'f' in big-endian order
  */
 void write32(FILE *f, uint32_t n) {
     uint8_t bytes[4];
@@ -42,12 +42,20 @@ void write32(FILE *f, uint32_t n) {
     fwrite(bytes, 1, 4, f);
 }
 
+void write16(FILE *f, uint16_t n) {
+    uint8_t bytes[2];
+    write_be(n, bytes, 2);
+    fwrite(bytes, 1, 2, f);
+}
+
 index_entry_t *read_index_entry(FILE *f, uint32_t version) {
     index_entry_t *entry = (index_entry_t *) malloc(sizeof(index_entry_t));
     /* Skip over metadata that I don't need */
     fseek(f, 8, SEEK_CUR);
     entry->mtime = read32(f);
-    fseek(f, 24, SEEK_CUR);
+    fseek(f, 12, SEEK_CUR);
+    entry->mode = read32(f);
+    fseek(f, 8, SEEK_CUR);
 
     entry->size = read32(f);
 
@@ -129,6 +137,62 @@ index_file_t *read_index_file() {
     return idx;
 }
 
+void write_index_entry(FILE *f, index_entry_t *entry) {
+    if (entry->removed)  return;
+
+    write32(f, 0);  // ctime seconds
+    write32(f, 0);  // ctime nanoseconds
+    write32(f, entry->mtime);  // mtime seconds
+    write32(f, 0);  // mtime nanoseconds
+    write32(f, 0);  // dev
+    write32(f, 0);  // ino
+    write32(f, entry->mode);
+    write32(f, 0);  // uid
+    write32(f, 0);  // gid
+    write32(f, entry->size);  // file size
+
+    uint8_t sha1[HASH_BYTES];
+    hex_to_hash(entry->sha1, sha1);
+    fwrite(sha1, 1, HASH_BYTES, f);
+
+    // highest 4 bits use 0;
+    // lower 12 bits use length of filename capped at 0xFFF
+    uint16_t flags = (entry->fname_length < 0xFFF)
+                      ? (uint16_t) entry->fname_length
+                      : 0xFFF;
+    write16(f, flags);
+
+    fwrite(entry->fname, 1, entry->fname_length, f);
+    fwrite('\0', 1, 1, f);
+
+    size_t bytes_written = 62 + entry->fname_length + 1;
+    if (bytes_written % 8 > 0) {
+      fwrite('\0', 1, 8 - (bytes_written % 8), f);
+    }
+}
+
+void write_index_file(index_file_t *index) {
+    FILE *f = fopen(INDEX_PATH, "w");
+    assert(f);
+    size_t nentries = hash_table_size(index->entries);
+
+    /* Index Header */
+    fwrite(DIRC_SIG, 1, 4, f);
+    write32(f, SUPPORTED_VERSION);
+    write32(f, nentries);
+
+    /* Index entries */
+    list_node_t *entries_it = key_set(index->entries);
+    while (entries_it != NULL) {
+        const char *fname = (const char *) node_value(entries_it);
+        index_entry_t *entry = hash_table_get(index->entries, fname);
+        write_index_entry(f, entry);
+        entries_it = node_next(entries_it);
+    }
+
+    fclose(f);
+}
+
 void free_index_entry(index_entry_t *entry) {
     free(entry->fname);
     free(entry);
@@ -137,3 +201,28 @@ void free_index_file(index_file_t *idx) {
     free_hash_table(idx->entries, (free_func_t) free_index_entry);
     free(idx);
 }
+
+bool index_is_empty(index_file_t *index) {
+    return hash_table_size(index->entries) == 0;
+}
+
+bool index_contains_file(index_file_t *index, const char *fname) {
+    return hash_table_contains(index, fname);
+}
+
+index_entry_t *index_create_entry(char *fname,
+                                  struct stat *sb,
+                                  object_hash_t sha1) {
+    index_entry_t *entry = (index_entry_t *) malloc(sizeof(index_entry_t));
+    assert(entry != NULL);
+    entry->size = sb->st_size;
+    strcpy(entry->sha1, sha1);
+    strcpy(entry->fname, fname);
+    entry->fname_length = strlen(fname);
+    entry->mtime = sb->st_mtime;
+    entry->mode = ((0b1000 << 12) |  // 4-bits for regular file
+                   ((S_IRWXU | S_IRWXG | S_IRWXO) & sb->st_mode));
+    entry->removed = false;
+    return entry;
+}
+

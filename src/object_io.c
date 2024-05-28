@@ -497,3 +497,27 @@ void apply_ref_delta(
     assert(written == sizeof(result_obj));
     write_object(base_type, result_obj, sizeof(result_obj), hash);
 }
+
+object_hash_t *store_blob(const char *added_file) {
+  // get size of added_file
+  FILE *f = fopen(added_file, "r");
+  assert(f);
+  fseek(f, 0, SEEK_END);
+  long fsize = ftell(f);
+  fseek(f, 0, SEEK_SET);
+
+  // obtain the file contents
+  uint8_t *contents = (uint8_t *) malloc(fsize);
+  fread((void *) contents, 1, fsize, f);
+
+  // hash and write to .git/objects
+  object_hash_t *hash = (object_hash_t *) malloc(sizeof(object_hash_t));
+  assert(hash != NULL);
+  write_object(BLOB, contents, fsize, *hash);
+
+  free(contents);
+  fclose(f);
+
+  return hash;
+}
+
