@@ -1,9 +1,11 @@
 #include "add.h"
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include "index_io.h"
+#include <unistd.h>
+#include <stdio.h>
+#include "hash_table.h"
 #include "object_io.h"
+#include "index_io.h"
 #include "util.h"
 
 /* ASSUMPTION:
@@ -29,7 +31,7 @@ void add_files(const char **file_paths, size_t file_count)
 #endif
     if (hash_table_contains(&working_tree_files,           // in working tree
                             added_file)) {
-        object_hash_t *sha1 = store_blob(added_file, sha1);  // add file to store, get its hash
+        object_hash_t *sha1 = store_blob(added_file);  // add file to store, get its hash
         index_entry_t *new_entry = index_create_entry(index,
                                                       added_file,
                                                       *sha1);

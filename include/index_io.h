@@ -39,10 +39,9 @@ bool index_contains_file(index_file_t *, const char *);
 index_entry_t *index_init_entry(uint32_t size,
                                 object_hash_t sha1, char *fname,
                                 uint32_t fname_length, time_t mtime);
-void index_add_entry(index_file_t *index, const char *fname);
 
-void index_modify_entry(index_file_t *index, const char *fname);
-
-void index_remove_entry(index_file_t *index, const char *fname);
+index_entry_t *index_create_entry(char *fname,
+                                  struct stat *sb,
+                                  object_hash_t sha1);
 
 #endif
