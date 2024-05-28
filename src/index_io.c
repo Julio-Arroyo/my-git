@@ -163,15 +163,17 @@ void write_index_entry(FILE *f, index_entry_t *entry) {
     write16(f, flags);
 
     fwrite(entry->fname, 1, entry->fname_length, f);
-    fwrite('\0', 1, 1, f);
+    fputc('\0', f);
 
     size_t bytes_written = 62 + entry->fname_length + 1;
     if (bytes_written % 8 > 0) {
-      fwrite('\0', 1, 8 - (bytes_written % 8), f);
+        for (size_t i = 0; i < 8 - (bytes_written % 8); i++) {
+            fputc('\0', f);
+        }
     }
 }
 
-void write_index_file(index_file_t *index) {
+void write_index_file(const index_file_t *index) {
     FILE *f = fopen(INDEX_PATH, "w");
     assert(f);
     size_t nentries = hash_table_size(index->entries);
@@ -207,7 +209,7 @@ bool index_is_empty(index_file_t *index) {
 }
 
 bool index_contains_file(index_file_t *index, const char *fname) {
-    return hash_table_contains(index, fname);
+    return hash_table_contains(index->entries, fname);
 }
 
 index_entry_t *index_create_entry(char *fname,

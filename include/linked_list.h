@@ -2,7 +2,7 @@
 #define LINKED_LIST_H
 
 typedef struct list_node list_node_t;
-typedef struct linked_list linked_list_t;
+typedef struct linked_list linked_list_t;  // declares 'linked_list_t' to be an alias for 'struct linked_list'
 
 typedef void (*free_func_t)(void *);
 

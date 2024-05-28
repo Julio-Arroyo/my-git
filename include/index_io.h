@@ -1,10 +1,11 @@
 #ifndef INDEX_IO_H
 #define INDEX_IO_H
 
+#include <sys/stat.h>
 #include <stdint.h>
 #include <time.h>
-#include "constants.h"
 #include "hash_table.h"
+#include "constants.h"
 #include "object_io.h"
 
 #define SUPPORTED_VERSION 2
@@ -28,7 +29,7 @@ typedef struct index_file {
 index_file_t *empty_index_file(void);
 index_file_t *read_index_file(void);
 
-void write_index_file(void);
+void write_index_file(const index_file_t*);
 
 void free_index_file(index_file_t *);
 void free_index_entry(index_entry_t *);

@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "constants.h"
+#include "linked_list.h"
 
 uint8_t from_octal(char c);
 uint8_t from_decimal(char c);
@@ -37,6 +38,6 @@ size_t get_file_size(FILE *f);
  * 'root_dir'. If 'recursive' is true, then files in subdirectories are
  * also added
  */
-void get_all_files(const char *dir, linked_list *files);
+void get_all_files(const char *dir, linked_list_t *files);
 
 #endif // #ifndef UTIL_H
