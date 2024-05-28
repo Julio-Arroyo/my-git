@@ -54,6 +54,6 @@ void add_files(const char **file_paths, size_t file_count)
 
   write_index_file(index);
   free_hash_table(working_tree_files, (free_func_t) free_index_entry);
-  free(working_tree_path);
+  free((void *) working_tree_path);
 }
 

@@ -38,6 +38,6 @@ size_t get_file_size(FILE *f);
  * 'root_dir'. If 'recursive' is true, then files in subdirectories are
  * also added
  */
-void get_all_files(const char *dir, linked_list_t *files);
+void get_all_files(const char *dir, linked_list_t *files, bool recursive);
 
 #endif // #ifndef UTIL_H
