@@ -212,7 +212,7 @@ bool index_contains_file(index_file_t *index, const char *fname) {
     return hash_table_contains(index->entries, fname);
 }
 
-index_entry_t *index_create_entry(char *fname,
+index_entry_t *index_create_entry(const char *fname,
                                   struct stat *sb,
                                   object_hash_t sha1) {
     index_entry_t *entry = (index_entry_t *) malloc(sizeof(index_entry_t));
